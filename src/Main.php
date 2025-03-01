@@ -9,6 +9,7 @@ use pocketmine\player\Player;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\world\World;
 use pocketmine\math\Vector3;
+use pocketmine\Server;
 
 class BlockFiller extends PluginBase {
 
@@ -25,12 +26,24 @@ class BlockFiller extends PluginBase {
             $oldBlock = VanillaBlocks::{$oldBlockName}();
             $newBlock = VanillaBlocks::{$newBlockName}();
 
-            if (!$sender instanceof Player) {
-                $sender->sendMessage("This command can only be used in-game.");
+            if (!$sender instanceof Player && count($args) < 3) {
+                $sender->sendMessage("You must specify a world when using this command from the console.");
                 return true;
             }
 
-            $world = $sender->getWorld();
+            // Bestimme die Welt
+            $world = null;
+            if (count($args) >= 3) {
+                $worldName = $args[2];
+                $world = Server::getInstance()->getWorldManager()->getWorldByName($worldName);
+                if ($world === null) {
+                    $sender->sendMessage("World '$worldName' does not exist.");
+                    return true;
+                }
+            } else {
+                $world = $sender->getWorld();
+            }
+
             $blocksReplaced = 0;
 
             for ($x = 0; $x < 16; $x++) {
@@ -45,7 +58,7 @@ class BlockFiller extends PluginBase {
                 }
             }
 
-            $sender->sendMessage("Replaced $blocksReplaced blocks.");
+            $sender->sendMessage("Replaced $blocksReplaced blocks in world '{$world->getFolderName()}'.");
             return true;
         }
         return false;
