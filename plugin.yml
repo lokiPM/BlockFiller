@@ -7,10 +7,10 @@ src-namespace-prefix: lokiPM\BlockFiller
 commands:
   blockreplacer:
     description: Fill the selected blocks.
-    permission: blockreplacer.fill.1
+    permission: blockreplacer.fill
     default: op
 
 permissions:
-  blockreplacer.fill.1:
+  blockreplacer.fill:
     description: Allows the player to use the /blockreplacer command.
     default: op
