@@ -25,14 +25,13 @@ class BlockFiller extends PluginBase {
             $newBlockName = strtolower($args[1]);
 
             // Überprüfe, ob die Blocknamen gültig sind
-            if (!isset(VanillaBlocks::{$oldBlockName}()) || !isset(VanillaBlocks::{$newBlockName}())) {
+            $oldBlock = VanillaBlocks::{$oldBlockName}() ?? null;
+            $newBlock = VanillaBlocks::{$newBlockName}() ?? null;
+
+            if ($oldBlock === null || $newBlock === null) {
                 $sender->sendMessage("Invalid block name. Use block names like 'stone', 'grass', etc.");
                 return false;
             }
-
-            // Hole die Block-Objekte aus VanillaBlocks
-            $oldBlock = VanillaBlocks::{$oldBlockName}();
-            $newBlock = VanillaBlocks::{$newBlockName}();
 
             // Bestimme die Welt
             $world = null;
