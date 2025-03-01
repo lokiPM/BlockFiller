@@ -55,8 +55,8 @@ class BlockFiller extends PluginBase {
 
             foreach ($world->getLoadedChunks() as $chunk) {
                 $chunkCount++;
-                $chunkX = $chunk->getPosition()->getX();
-                $chunkZ = $chunk->getPosition()->getZ();
+                $chunkX = $chunk->getX(); // Get the chunk's X coordinate
+                $chunkZ = $chunk->getZ(); // Get the chunk's Z coordinate
 
                 for ($x = 0; $x < 16; $x++) {
                     for ($z = 0; $z < 16; $z++) {
