@@ -11,7 +11,7 @@ use pocketmine\world\World;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
 
-class BlockFiller extends PluginBase {
+class Main extends PluginBase {
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
         if ($command->getName() === "blockreplacer") {
