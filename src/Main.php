@@ -48,7 +48,7 @@ class Main extends PluginBase {
             }
 
             // Start the block replacement task
-            $this->getScheduler()->scheduleRepeatingTask(new BlockReplacerTask($this, $world, $oldBlock, $newBlock, $sender), 1);
+            $this->getScheduler()->scheduleRepeatingTask(new BlockReplacerTask($world, $oldBlock, $newBlock, $sender), 1);
             return true;
         }
         return false;
@@ -57,7 +57,6 @@ class Main extends PluginBase {
 
 class BlockReplacerTask extends Task {
 
-    private $plugin;
     private $world;
     private $oldBlock;
     private $newBlock;
@@ -66,8 +65,7 @@ class BlockReplacerTask extends Task {
     private $currentChunkIndex = 0;
     private $blocksReplaced = 0;
 
-    public function __construct(Main $plugin, World $world, $oldBlock, $newBlock, CommandSender $sender) {
-        $this->plugin = $plugin;
+    public function __construct(World $world, $oldBlock, $newBlock, CommandSender $sender) {
         $this->world = $world;
         $this->oldBlock = $oldBlock;
         $this->newBlock = $newBlock;
