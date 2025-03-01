@@ -1,5 +1,16 @@
 name: BlockFiller
-version: 0.0.1
+version: 1.0+dev
 main: lokiPM\BlockFiller\Main
-api: 5.25.1
+api: 5.0.0
 src-namespace-prefix: lokiPM\BlockFiller
+
+commands:
+  blockreplacer:
+    description: Fill the selected blocks.
+    permission: blockreplacer.fill.1
+    default: op
+
+permissions:
+  blockreplacer.fill.1:
+    description: Allows the player to use the /blockreplacer command.
+    default: op
