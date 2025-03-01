@@ -47,7 +47,6 @@ class Main extends PluginBase {
                 return true;
             }
 
-            // Start the block replacement task
             $this->getScheduler()->scheduleRepeatingTask(new BlockReplacerTask($world, $oldBlock, $newBlock, $sender), 1);
             return true;
         }
@@ -64,6 +63,7 @@ class BlockReplacerTask extends Task {
     private $chunks;
     private $currentChunkIndex = 0;
     private $blocksReplaced = 0;
+    private $foundBlocks = false;
 
     public function __construct(World $world, $oldBlock, $newBlock, CommandSender $sender) {
         $this->world = $world;
@@ -75,8 +75,11 @@ class BlockReplacerTask extends Task {
 
     public function onRun(): void {
         if ($this->currentChunkIndex >= count($this->chunks)) {
-            // All chunks processed
-            $this->sender->sendMessage("Replaced {$this->blocksReplaced} blocks in world '{$this->world->getFolderName()}'.");
+            if (!$this->foundBlocks) {
+                $this->sender->sendMessage("No blocks to replace found in world '{$this->world->getFolderName()}'.");
+            } else {
+                $this->sender->sendMessage("Replaced {$this->blocksReplaced} blocks in world '{$this->world->getFolderName()}'.");
+            }
             $this->getHandler()->cancel();
             return;
         }
@@ -85,6 +88,8 @@ class BlockReplacerTask extends Task {
         $chunk = $this->chunks[$chunkHash];
         World::getXZ($chunkHash, $chunkX, $chunkZ);
 
+        $foundInChunk = false;
+
         for ($x = 0; $x < 16; $x++) {
             for ($z = 0; $z < 16; $z++) {
                 for ($y = $this->world->getMinY(); $y < $this->world->getMaxY(); $y++) {
@@ -92,9 +97,17 @@ class BlockReplacerTask extends Task {
                     if ($block->getTypeId() === $this->oldBlock->getTypeId()) {
                         $this->world->setBlock(new Vector3($chunkX * 16 + $x, $y, $chunkZ * 16 + $z), $this->newBlock);
                         $this->blocksReplaced++;
+                        $foundInChunk = true;
+                        $this->foundBlocks = true;
                     }
                 }
             }
+        }
+
+        if (!$foundInChunk && !$this->foundBlocks && $this->currentChunkIndex === count($this->chunks) - 1) {
+            $this->sender->sendMessage("No blocks to replace found in world '{$this->world->getFolderName()}'.");
+            $this->getHandler()->cancel();
+            return;
         }
 
         $this->currentChunkIndex++;
