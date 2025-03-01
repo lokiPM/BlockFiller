@@ -10,6 +10,7 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\world\World;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
+use pocketmine\scheduler\Task;
 
 class Main extends PluginBase {
 
@@ -46,29 +47,58 @@ class Main extends PluginBase {
                 return true;
             }
 
-            $blocksReplaced = 0;
-            $chunkCount = 0;
-
-            foreach ($world->getLoadedChunks() as $chunkHash => $chunk) {
-                World::getXZ($chunkHash, $chunkX, $chunkZ);
-                $chunkCount++;
-
-                for ($x = 0; $x < 16; $x++) {
-                    for ($z = 0; $z < 16; $z++) {
-                        for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            $block = $world->getBlockAt($chunkX * 16 + $x, $y, $chunkZ * 16 + $z);
-                            if ($block->getTypeId() === $oldBlock->getTypeId()) {
-                                $world->setBlock(new Vector3($chunkX * 16 + $x, $y, $chunkZ * 16 + $z), $newBlock);
-                                $blocksReplaced++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            $sender->sendMessage("Replaced $blocksReplaced blocks in world '{$world->getFolderName()}' (processed $chunkCount chunks).");
+            // Start the block replacement task
+            $this->getScheduler()->scheduleRepeatingTask(new BlockReplacerTask($this, $world, $oldBlock, $newBlock, $sender), 1);
             return true;
         }
         return false;
+    }
+}
+
+class BlockReplacerTask extends Task {
+
+    private $plugin;
+    private $world;
+    private $oldBlock;
+    private $newBlock;
+    private $sender;
+    private $chunks;
+    private $currentChunkIndex = 0;
+    private $blocksReplaced = 0;
+
+    public function __construct(Main $plugin, World $world, $oldBlock, $newBlock, CommandSender $sender) {
+        $this->plugin = $plugin;
+        $this->world = $world;
+        $this->oldBlock = $oldBlock;
+        $this->newBlock = $newBlock;
+        $this->sender = $sender;
+        $this->chunks = $world->getLoadedChunks();
+    }
+
+    public function onRun(): void {
+        if ($this->currentChunkIndex >= count($this->chunks)) {
+            // All chunks processed
+            $this->sender->sendMessage("Replaced {$this->blocksReplaced} blocks in world '{$this->world->getFolderName()}'.");
+            $this->getHandler()->cancel();
+            return;
+        }
+
+        $chunkHash = array_keys($this->chunks)[$this->currentChunkIndex];
+        $chunk = $this->chunks[$chunkHash];
+        World::getXZ($chunkHash, $chunkX, $chunkZ);
+
+        for ($x = 0; $x < 16; $x++) {
+            for ($z = 0; $z < 16; $z++) {
+                for ($y = $this->world->getMinY(); $y < $this->world->getMaxY(); $y++) {
+                    $block = $this->world->getBlockAt($chunkX * 16 + $x, $y, $chunkZ * 16 + $z);
+                    if ($block->getTypeId() === $this->oldBlock->getTypeId()) {
+                        $this->world->setBlock(new Vector3($chunkX * 16 + $x, $y, $chunkZ * 16 + $z), $this->newBlock);
+                        $this->blocksReplaced++;
+                    }
+                }
+            }
+        }
+
+        $this->currentChunkIndex++;
     }
 }
