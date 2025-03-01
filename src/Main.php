@@ -37,7 +37,7 @@ class BlockFiller extends PluginBase {
                 for ($z = 0; $z < 16; $z++) {
                     for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                         $block = $world->getBlockAt($x, $y, $z);
-                        if ($block->getId() === $oldBlock->getId()) {
+                        if ($block->getTypeId() === $oldBlock->getTypeId()) {
                             $world->setBlock(new Vector3($x, $y, $z), $newBlock);
                             $blocksReplaced++;
                         }
