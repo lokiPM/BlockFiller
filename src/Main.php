@@ -55,12 +55,15 @@ class BlockFiller extends PluginBase {
 
             foreach ($world->getLoadedChunks() as $chunk) {
                 $chunkCount++;
+                $chunkX = $chunk->getPosition()->getX();
+                $chunkZ = $chunk->getPosition()->getZ();
+
                 for ($x = 0; $x < 16; $x++) {
                     for ($z = 0; $z < 16; $z++) {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            $block = $world->getBlockAt($chunk->getX() * 16 + $x, $y, $chunk->getZ() * 16 + $z);
+                            $block = $world->getBlockAt($chunkX * 16 + $x, $y, $chunkZ * 16 + $z);
                             if ($block->getTypeId() === $oldBlock->getTypeId()) {
-                                $world->setBlock(new Vector3($chunk->getX() * 16 + $x, $y, $chunk->getZ() * 16 + $z), $newBlock);
+                                $world->setBlock(new Vector3($chunkX * 16 + $x, $y, $chunkZ * 16 + $z), $newBlock);
                                 $blocksReplaced++;
                             }
                         }
