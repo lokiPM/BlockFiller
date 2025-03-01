@@ -26,11 +26,6 @@ class BlockFiller extends PluginBase {
             $oldBlock = VanillaBlocks::{$oldBlockName}();
             $newBlock = VanillaBlocks::{$newBlockName}();
 
-            if (!$sender instanceof Player && count($args) < 3) {
-                $sender->sendMessage("You must specify a world when using this command from the console.");
-                return true;
-            }
-
             // Bestimme die Welt
             $world = null;
             if (count($args) >= 3) {
@@ -40,8 +35,11 @@ class BlockFiller extends PluginBase {
                     $sender->sendMessage("World '$worldName' does not exist.");
                     return true;
                 }
-            } else {
+            } elseif ($sender instanceof Player) {
                 $world = $sender->getWorld();
+            } else {
+                $sender->sendMessage("You must specify a world when using this command from the console.");
+                return true;
             }
 
             $blocksReplaced = 0;
