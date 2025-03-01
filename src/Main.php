@@ -15,7 +15,6 @@ class BlockFiller extends PluginBase {
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
         if ($command->getName() === "blockreplacer") {
-            // Überprüfe, ob genügend Argumente angegeben wurden
             if (count($args) < 2) {
                 $sender->sendMessage("Usage: /blockreplacer <oldblock> <newblock> [world]");
                 return false;
@@ -24,7 +23,6 @@ class BlockFiller extends PluginBase {
             $oldBlockName = strtolower($args[0]);
             $newBlockName = strtolower($args[1]);
 
-            // Überprüfe, ob die Blocknamen gültig sind
             $oldBlock = VanillaBlocks::{$oldBlockName}() ?? null;
             $newBlock = VanillaBlocks::{$newBlockName}() ?? null;
 
@@ -33,7 +31,6 @@ class BlockFiller extends PluginBase {
                 return false;
             }
 
-            // Bestimme die Welt
             $world = null;
             if (count($args) >= 3) {
                 $worldName = $args[2];
@@ -49,14 +46,12 @@ class BlockFiller extends PluginBase {
                 return true;
             }
 
-            // Ersetze die Blöcke
             $blocksReplaced = 0;
             $chunkCount = 0;
 
-            foreach ($world->getLoadedChunks() as $chunk) {
+            foreach ($world->getLoadedChunks() as $chunkHash => $chunk) {
+                World::getXZ($chunkHash, $chunkX, $chunkZ);
                 $chunkCount++;
-                $chunkX = $chunk->getX(); // Get the chunk's X coordinate
-                $chunkZ = $chunk->getZ(); // Get the chunk's Z coordinate
 
                 for ($x = 0; $x < 16; $x++) {
                     for ($z = 0; $z < 16; $z++) {
