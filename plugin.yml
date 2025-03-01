@@ -1,6 +1,6 @@
 name: BlockFiller
 version: 1.0+dev
-main: lokiPM\BlockFiller\BlockFiller
+main: lokiPM\BlockFiller
 api: 5.0.0
 src-namespace-prefix: lokiPM\BlockFiller
 
