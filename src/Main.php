@@ -76,7 +76,7 @@ class BlockReplacerTask extends Task {
     public function onRun(): void {
         if ($this->currentChunkIndex >= count($this->chunks)) {
             if (!$this->foundBlocks) {
-                $this->sender->sendMessage("No blocks to replace found in world '{$this->world->getFolderName()}'.");
+                $this->sender->sendMessage("Block not found.");
             } else {
                 $this->sender->sendMessage("Replaced {$this->blocksReplaced} blocks in world '{$this->world->getFolderName()}'.");
             }
@@ -105,7 +105,7 @@ class BlockReplacerTask extends Task {
         }
 
         if (!$foundInChunk && !$this->foundBlocks && $this->currentChunkIndex === count($this->chunks) - 1) {
-            $this->sender->sendMessage("No blocks to replace found in world '{$this->world->getFolderName()}'.");
+            $this->sender->sendMessage("Block not found.");
             $this->getHandler()->cancel();
             return;
         }
