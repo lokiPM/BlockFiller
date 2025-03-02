@@ -11,7 +11,7 @@ use pocketmine\world\World;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\scheduler\AsyncTask;
-use pocketmine\block\BlockFactory; // Add this import
+use pocketmine\block\RuntimeBlockRegistry; // Add this import
 
 class Main extends PluginBase {
 
@@ -89,8 +89,8 @@ class BlockReplacerAsyncTask extends AsyncTask {
                     for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                         $block = $world->getBlockAt($chunkX * 16 + $x, $y, $chunkZ * 16 + $z);
                         if ($block->getTypeId() === $this->oldBlockId) {
-                            // Use BlockFactory to get the new block instance
-                            $newBlockInstance = BlockFactory::getInstance()->get($this->newBlockId, 0);
+                            // Use RuntimeBlockRegistry to get the new block instance
+                            $newBlockInstance = RuntimeBlockRegistry::getInstance()->fromTypeId($this->newBlockId);
                             $world->setBlock(new Vector3($chunkX * 16 + $x, $y, $chunkZ * 16 + $z), $newBlockInstance);
                             $blocksReplaced++;
                         }
