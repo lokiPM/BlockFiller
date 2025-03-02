@@ -7,6 +7,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\block\BlockFactory;
 use pocketmine\world\World;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
@@ -89,7 +90,7 @@ class BlockReplacerAsyncTask extends AsyncTask {
                     for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                         $block = $world->getBlockAt($chunkX * 16 + $x, $y, $chunkZ * 16 + $z);
                         if ($block->getTypeId() === $this->oldBlockId) {
-                            $newBlockInstance = VanillaBlocks::get($this->newBlockId); // Use VanillaBlocks::get() to get the block instance
+                            $newBlockInstance = BlockFactory::getInstance()->get($this->newBlockId, 0); // Use BlockFactory to get the block instance
                             $world->setBlock(new Vector3($chunkX * 16 + $x, $y, $chunkZ * 16 + $z), $newBlockInstance);
                             $blocksReplaced++;
                         }
