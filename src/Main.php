@@ -10,7 +10,8 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\world\World;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
-use pocketmine\scheduler\Task;
+use pocketmine\scheduler\AsyncTask;
+use pocketmine\scheduler\ClosureTask;
 
 class Main extends PluginBase {
 
@@ -47,69 +48,70 @@ class Main extends PluginBase {
                 return true;
             }
 
-            $this->getScheduler()->scheduleRepeatingTask(new BlockReplacerTask($world, $oldBlock, $newBlock, $sender), 20); // 20 Ticks = 1 Sekunde
+            // Schedule the AsyncTask
+            $this->getServer()->getAsyncPool()->submitTask(new BlockReplacerAsyncTask($world->getFolderName(), $oldBlock->getTypeId(), $newBlock->getTypeId(), $sender->getName()));
+            $sender->sendMessage("Block replacement process started...");
             return true;
         }
         return false;
     }
 }
 
-class BlockReplacerTask extends Task {
+class BlockReplacerAsyncTask extends AsyncTask {
 
-    private $world;
-    private $oldBlock;
-    private $newBlock;
-    private $sender;
-    private $chunks;
-    private $currentChunkIndex = 0;
-    private $blocksReplaced = 0;
-    private $foundBlocks = false;
+    private $worldName;
+    private $oldBlockId;
+    private $newBlockId;
+    private $senderName;
 
-    public function __construct(World $world, $oldBlock, $newBlock, CommandSender $sender) {
-        $this->world = $world;
-        $this->oldBlock = $oldBlock;
-        $this->newBlock = $newBlock;
-        $this->sender = $sender;
-        $this->chunks = $world->getLoadedChunks();
+    public function __construct(string $worldName, int $oldBlockId, int $newBlockId, string $senderName) {
+        $this->worldName = $worldName;
+        $this->oldBlockId = $oldBlockId;
+        $this->newBlockId = $newBlockId;
+        $this->senderName = $senderName;
     }
 
     public function onRun(): void {
-        if ($this->currentChunkIndex >= count($this->chunks)) {
-            if (!$this->foundBlocks) {
-                $this->sender->sendMessage("Block not found.");
-            } else {
-                $this->sender->sendMessage("Replaced {$this->blocksReplaced} blocks in world '{$this->world->getFolderName()}'.");
-            }
-            $this->getHandler()->cancel();
+        $world = Server::getInstance()->getWorldManager()->getWorldByName($this->worldName);
+        if ($world === null) {
+            $this->setResult(["error" => "World '{$this->worldName}' not found."]);
             return;
         }
 
-        $chunkHash = array_keys($this->chunks)[$this->currentChunkIndex];
-        $chunk = $this->chunks[$chunkHash];
-        World::getXZ($chunkHash, $chunkX, $chunkZ);
+        $blocksReplaced = 0;
+        $chunks = $world->getLoadedChunks();
 
-        $foundInChunk = false;
+        foreach ($chunks as $chunkHash => $chunk) {
+            World::getXZ($chunkHash, $chunkX, $chunkZ);
 
-        for ($x = 0; $x < 16; $x++) {
-            for ($z = 0; $z < 16; $z++) {
-                for ($y = $this->world->getMinY(); $y < $this->world->getMaxY(); $y++) {
-                    $block = $this->world->getBlockAt($chunkX * 16 + $x, $y, $chunkZ * 16 + $z);
-                    if ($block->getTypeId() === $this->oldBlock->getTypeId()) {
-                        $this->world->setBlock(new Vector3($chunkX * 16 + $x, $y, $chunkZ * 16 + $z), $this->newBlock);
-                        $this->blocksReplaced++;
-                        $foundInChunk = true;
-                        $this->foundBlocks = true;
+            for ($x = 0; $x < 16; $x++) {
+                for ($z = 0; $z < 16; $z++) {
+                    for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+                        $block = $world->getBlockAt($chunkX * 16 + $x, $y, $chunkZ * 16 + $z);
+                        if ($block->getTypeId() === $this->oldBlockId) {
+                            $world->setBlock(new Vector3($chunkX * 16 + $x, $y, $chunkZ * 16 + $z), VanillaBlocks::fromTypeId($this->newBlockId));
+                            $blocksReplaced++;
+                        }
                     }
                 }
             }
         }
 
-        if (!$foundInChunk && !$this->foundBlocks && $this->currentChunkIndex === count($this->chunks) - 1) {
-            $this->sender->sendMessage("Block not found.");
-            $this->getHandler()->cancel();
+        $this->setResult(["blocksReplaced" => $blocksReplaced, "worldName" => $this->worldName]);
+    }
+
+    public function onCompletion(): void {
+        $sender = Server::getInstance()->getPlayerExact($this->senderName);
+        if ($sender === null) {
+            // Sender is not online, no need to send a message
             return;
         }
 
-        $this->currentChunkIndex++;
+        $result = $this->getResult();
+        if (isset($result["error"])) {
+            $sender->sendMessage($result["error"]);
+        } else {
+            $sender->sendMessage("Done! Replaced {$result["blocksReplaced"]} blocks in world '{$result["worldName"]}'.");
+        }
     }
 }
