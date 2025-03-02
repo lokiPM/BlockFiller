@@ -47,7 +47,7 @@ class Main extends PluginBase {
                 return true;
             }
 
-            $this->getScheduler()->scheduleRepeatingTask(new BlockReplacerTask($world, $oldBlock, $newBlock, $sender), 1); // 1 Tick = 0.05 Sekunden
+            $this->getScheduler()->scheduleRepeatingTask(new BlockReplacerTask($world, $oldBlock, $newBlock, $sender), 20); // 20 Ticks = 1 Sekunde
             return true;
         }
         return false;
