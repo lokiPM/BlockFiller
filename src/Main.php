@@ -47,7 +47,7 @@ class Main extends PluginBase {
                 return true;
             }
 
-            $this->getScheduler()->scheduleRepeatingTask(new BlockReplacerTask($world, $oldBlock, $newBlock, $sender), 20); // 20 Ticks = 1 Sekunde
+            $this->getScheduler()->scheduleRepeatingTask(new BlockReplacerTask($world, $oldBlock, $newBlock, $sender), 1); // 1 Tick = 0.05 Sekunden
             return true;
         }
         return false;
@@ -64,7 +64,6 @@ class BlockReplacerTask extends Task {
     private $currentChunkIndex = 0;
     private $blocksReplaced = 0;
     private $foundBlocks = false;
-    private $lastRunTime = 0;
 
     public function __construct(World $world, $oldBlock, $newBlock, CommandSender $sender) {
         $this->world = $world;
@@ -72,17 +71,9 @@ class BlockReplacerTask extends Task {
         $this->newBlock = $newBlock;
         $this->sender = $sender;
         $this->chunks = $world->getLoadedChunks();
-        $this->lastRunTime = microtime(true);
     }
 
     public function onRun(): void {
-        $currentTime = microtime(true);
-
-        // Füge ein Delay von 2 Sekunden zwischen den Chunk-Verarbeitungen hinzu
-        if ($currentTime - $this->lastRunTime < 2) {
-            return;
-        }
-
         if ($this->currentChunkIndex >= count($this->chunks)) {
             if (!$this->foundBlocks) {
                 $this->sender->sendMessage("Block not found.");
@@ -120,6 +111,5 @@ class BlockReplacerTask extends Task {
         }
 
         $this->currentChunkIndex++;
-        $this->lastRunTime = $currentTime; // Aktualisiere die letzte Ausführungszeit
     }
 }
