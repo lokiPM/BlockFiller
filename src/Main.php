@@ -89,7 +89,8 @@ class BlockReplacerAsyncTask extends AsyncTask {
                     for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                         $block = $world->getBlockAt($chunkX * 16 + $x, $y, $chunkZ * 16 + $z);
                         if ($block->getTypeId() === $this->oldBlockId) {
-                            $world->setBlock(new Vector3($chunkX * 16 + $x, $y, $chunkZ * 16 + $z), VanillaBlocks::fromTypeId($this->newBlockId));
+                            $newBlockInstance = VanillaBlocks::get($this->newBlockId); // Use VanillaBlocks::get() to get the block instance
+                            $world->setBlock(new Vector3($chunkX * 16 + $x, $y, $chunkZ * 16 + $z), $newBlockInstance);
                             $blocksReplaced++;
                         }
                     }
