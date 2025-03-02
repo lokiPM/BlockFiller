@@ -78,8 +78,8 @@ class BlockReplacerTask extends Task {
     public function onRun(): void {
         $currentTime = microtime(true);
 
-        // Füge ein Delay von 1-2 Sekunden zwischen den Chunk-Verarbeitungen hinzu
-        if ($currentTime - $this->lastRunTime < 1) {
+        // Füge ein Delay von 2 Sekunden zwischen den Chunk-Verarbeitungen hinzu
+        if ($currentTime - $this->lastRunTime < 2) {
             return;
         }
 
